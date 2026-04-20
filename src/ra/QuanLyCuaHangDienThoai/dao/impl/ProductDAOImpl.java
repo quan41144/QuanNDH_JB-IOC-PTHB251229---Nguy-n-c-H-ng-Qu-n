@@ -118,20 +118,21 @@ public class ProductDAOImpl implements IProductDAO<Product> {
     }
 
     @Override
-    public void searchProductByBrand(String brand) {
+    public List<Product> searchProductByBrand(String brand) {
+        List<Product> list = new ArrayList<>();
         String sql = "select * from search_product_by_brand(?)";
         try (Connection con = DBUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, brand);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    System.out.printf("ID Product: %d | name: %s | brand: %s | price: %.2f | stock: %d\n",
-                            rs.getInt("id"),
-                            rs.getString("name"),
-                            rs.getString("brand"),
-                            rs.getDouble("price"),
-                            rs.getInt("stock")
-                    );
+                    list.add(new Product(
+                       rs.getInt("id"),
+                       rs.getString("name"),
+                       rs.getString("brand"),
+                       rs.getDouble("price"),
+                       rs.getInt("stock")
+                    ));
                 }
             }
         }
@@ -141,10 +142,12 @@ public class ProductDAOImpl implements IProductDAO<Product> {
         catch (Exception e) {
             System.out.println("Lỗi: " + e.getMessage());
         }
+        return list;
     }
 
     @Override
-    public void searchProductByPrice(double begin, double end) {
+    public List<Product> searchProductByPrice(double begin, double end) {
+        List<Product> list = new ArrayList<>();
         String sql = "select * from search_product_by_price(?, ?)";
         try (Connection con = DBUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -152,13 +155,13 @@ public class ProductDAOImpl implements IProductDAO<Product> {
             ps.setDouble(2, end);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    System.out.printf("ID Product: %d | name: %s | brand: %s | price: %.2f | stock: %d\n",
+                    list.add(new Product(
                             rs.getInt("id"),
                             rs.getString("name"),
                             rs.getString("brand"),
                             rs.getDouble("price"),
                             rs.getInt("stock")
-                    );
+                    ));
                 }
             }
         }
@@ -168,10 +171,12 @@ public class ProductDAOImpl implements IProductDAO<Product> {
         catch (Exception e) {
             System.out.println("Lỗi: " + e.getMessage());
         }
+        return list;
     }
 
     @Override
-    public void searchProductByName(String name, int stock) {
+    public List<Product> searchProductByName(String name, int stock) {
+        List<Product> list = new ArrayList<>();
         String sql = "select * from search_product_by_name(?, ?)";
         try (Connection con = DBUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -179,13 +184,13 @@ public class ProductDAOImpl implements IProductDAO<Product> {
             ps.setInt(2, stock);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    System.out.printf("ID Product: %d | name: %s | brand: %s | price: %.2f | stock: %d\n",
+                    list.add(new Product(
                             rs.getInt("id"),
                             rs.getString("name"),
                             rs.getString("brand"),
                             rs.getDouble("price"),
                             rs.getInt("stock")
-                    );
+                    ));
                 }
             }
         }
@@ -195,6 +200,7 @@ public class ProductDAOImpl implements IProductDAO<Product> {
         catch (Exception e) {
             System.out.println("Lỗi: " + e.getMessage());
         }
+        return list;
     }
     @Override
     public Product getProductById(int id) {

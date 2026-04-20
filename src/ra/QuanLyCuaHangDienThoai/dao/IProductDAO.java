@@ -10,8 +10,8 @@ public interface IProductDAO<T> {
     void updateProduct(T item);
     void deleteProduct(int id);
     List<T> listProduct();
-    void searchProductByBrand(String brand);
-    void searchProductByPrice(double begin, double end);
-    void searchProductByName(String name, int stock);
+    List<T> searchProductByBrand(String brand);
+    List<T> searchProductByPrice(double begin, double end);
+    List<T> searchProductByName(String name, int stock);
     T getProductById(int id);
 }

@@ -87,7 +87,7 @@ returns boolean
 language plpgsql
 as $$
 begin
-	if p_price > 0 and p_stock > 0 then
+	if p_price >= 0 and p_stock >= 0 then
 		return true;
 	end if;
 	return false;
@@ -163,20 +163,6 @@ begin
 end;
 $$;
 
--- Kiểm tra sự tồn tại của sản phẩm theo brand
-create or replace function isExist_product_brand(
-	p_brand varchar
-)
-returns boolean
-language plpgsql
-as $$
-begin
-	if exists (select 1 from product where brand = p_brand) then
-		return true;
-	end if;
-	return false;
-end;
-$$;
 -- 5. Hiển thị danh sách sản phẩm
 create or replace function list_product()
 returns table(
@@ -210,7 +196,7 @@ returns table (
 language plpgsql
 as $$
 begin
-	-- Không tồn tại sản phẩm có brand ... (exception)
+	-- Không tồn tại sản phẩm có brand phù hợp ... (exception)
 	return query
 	select id, name, brand, price, stock
 	from product
@@ -219,21 +205,6 @@ begin
 end;
 $$;
 
--- Kiểm tra sự tồn tại của sản phẩm theo price
-create or replace function isExist_product_price(
-	p_begin_price decimal,
-	p_end_price decimal
-)
-returns boolean
-language plpgsql
-as $$
-begin
-	if exists (select 1 from product where price between p_begin_price and p_end_price) then
-		return true;
-	end if;
-	return false;
-end;
-$$;
 -- 7. Tìm kiếm sản phẩm theo price range
 create or replace function search_product_by_price(
 	p_begin_price decimal,
@@ -296,6 +267,33 @@ $$;
 
 -- Chức năng quản lý khách hàng
 select * from customer;
+-- Kiểm tra sự tồn tại của phone và email của khách hàng
+create or replace function isExist_email(
+	p_email varchar
+)
+returns boolean
+language plpgsql
+as $$
+begin
+	if exists (select 1 from customer where email ilike p_email) then
+		return true;
+	end if;
+	return false;
+end;
+$$;
+create or replace function isExist_phone(
+	p_phone varchar
+)
+returns boolean
+language plpgsql
+as $$
+begin
+	if exists (select 1 from customer where phone ilike p_phone) then
+		return true;
+	end if;
+	return false;
+end;
+$$;
 -- 1. Thêm mới khách hàng
 create or replace procedure add_customer(
 	p_name varchar,
