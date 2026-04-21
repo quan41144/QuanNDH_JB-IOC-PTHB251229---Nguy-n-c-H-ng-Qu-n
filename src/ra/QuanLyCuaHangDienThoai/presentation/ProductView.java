@@ -60,7 +60,7 @@ public class ProductView {
         }
     }
 
-    private void showListProduct() {
+    public void showListProduct() {
         List<Product> list = productDAO.listProduct();
         if (list.isEmpty()) {
             System.out.println("Danh sách trống!");

@@ -56,7 +56,7 @@ public class ProductServiceImpl implements IProductService<Product> {
 
     @Override
     public boolean isCheckPriceAndStock(double price, int stock) {
-        String sql = "select * from isCheck_price_stock(?, ?)";
+        String sql = "select * from isCheck_price_stock(?::decimal, ?)";
         try (Connection con = DBUtil.getConnection();
         CallableStatement cs = con.prepareCall(sql)) {
             cs.setDouble(1, price);

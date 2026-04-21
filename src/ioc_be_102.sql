@@ -388,17 +388,101 @@ $$;
 
 -- Quản lý thông tin mua bán
 select * from invoice;
+-- Lấy thông tin của khách hàng được thêm vào mới nhất
+create or replace function info_new_customer()
+returns table(
+	id int,
+	name varchar,
+	phone varchar,
+	email varchar,
+	address varchar
+)
+language plpgsql
+as $$
+begin
+	return query
+	select id, name, phone, email, address
+	from customer where id = (select max(id) from customer);
+end;
+$$;
 -- 1. Thêm mới đơn hàng
+-- Tạo mới một đơn hàng mới (trống thông tin)
 create or replace procedure add_invoice(
-	p_customer_id int,
-	p_created_at timestamp,
-	p_total_amount decimal
+	p_customer_id int
 )
 language plpgsql
 as $$
 begin
 	insert into invoice(customer_id, created_at, total_amount) values
-	(p_customer_id, p_created_at, p_total_amount);
+	(p_customer_id, current_timestamp, 0);
+end;
+$$;
+-- Lấy thông tin của đơn hàng được thêm vào mới nhất
+create or replace function info_new_invoice()
+returns table(
+	id int,
+	customer_id int,
+	created_at timestamp,
+	total_amount decimal
+)
+language plpgsql
+as $$
+begin
+	return query
+	select id, customer_id, created_at, total_amount
+	from invoice where id = (select max(id) from invoice);
+end;
+$$;
+select * from invoice_details;
+-- Tạo đơn hàng chi tiết
+create or replace procedure add_invoice_details(
+	p_invoice_id int,
+	p_product_id int,
+	p_quantity int
+)
+language plpgsql
+as $$
+declare
+	v_unit_price decimal;
+	v_price decimal;
+begin
+	select p.price into v_price
+	from product p where p.id = p_product_id;
+	v_unit_price := v_price * p_quantity;
+	insert into invoice_details(invoice_id, product_id, quantity, unit_price) values
+	(p_invoice_id, p_product_id, p_quantity, v_unit_price);
+	update product set stock = stock - p_quantity where id = p_product_id;
+end;
+$$;
+-- Kiểm tra số lượng tồn kho của sản phẩm trước khi được thêm vào đơn hàng
+create or replace function check_product_stock(
+	p_product_id int,
+	p_quantity int
+)
+returns boolean
+language plpgsql
+as $$
+declare v_stock int;
+begin
+	select stock into v_stock from product where id = p_product_id;
+	if (stock >= p_quantity) then
+		return true;
+	end if;
+	return false;
+end;
+$$;
+-- Tạo hoàn thành một đơn hàng hoàn chỉnh
+create or replace procedure add_final_invoice(
+	p_id int
+)
+language plpgsql
+as $$
+declare
+	v_total_amount decimal;
+begin
+	select coalesce(sum(ide.unit_price), 0) into v_total_amount
+	from invoice_details ide where ide.invoice_id = p_id;
+	update invoice set total_amount = p_total_amount where id = p_id;
 end;
 $$;
 -- 2. Hiển thị danh sách hóa đơn
@@ -436,7 +520,7 @@ begin
 	return query
 	select i.id, i.customer_id, c.name, i.created_at, i.total_amount
 	from customer c
-	left join invoice i on c.id = i.customer_id and c.name = p_customer_name
+	join invoice i on c.id = i.customer_id and c.name ilike '%' || p_customer_name || '%'
 	order by c.id;
 end;
 $$;

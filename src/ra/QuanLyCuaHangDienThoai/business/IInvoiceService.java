@@ -1,4 +1,5 @@
 package ra.QuanLyCuaHangDienThoai.business;
 
-public interface IInvoiceService {
+public interface IInvoiceService<T> {
+    boolean isExistCustomerId(int id);
 }

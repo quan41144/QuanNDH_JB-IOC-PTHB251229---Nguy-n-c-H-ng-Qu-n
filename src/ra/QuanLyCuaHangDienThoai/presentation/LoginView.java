@@ -57,13 +57,13 @@ public class LoginView {
                         }
                     }
                     catch (NumberFormatException e) {
-                        System.out.println("Vui lòng nhập đúng số!");
+                        System.err.println("Vui lòng nhập đúng số!");
                     }
                 }
                 break;
             }
             else {
-                System.out.println("Sai tài khoản hoặc mật khẩu! Vui lòng nhập lại!");
+                System.err.println("Sai tài khoản hoặc mật khẩu! Vui lòng nhập lại!");
             }
         }
     }

@@ -61,7 +61,7 @@ public class CustomerView {
             System.out.println("==========================================");
         }
     }
-    private void addCustomer() {
+    public void addCustomer() {
         System.out.print("Nhập tên khách hàng mới: ");
         String name = sc.nextLine();
         System.out.print("Nhập số điện thoại: ");

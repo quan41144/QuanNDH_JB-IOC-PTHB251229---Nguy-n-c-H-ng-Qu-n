@@ -148,4 +148,31 @@ public class CustomerDAOImpl implements ICustomerDAO<Customer> {
         }
         return customers;
     }
+
+    @Override
+    public Customer infoNewCustomer() {
+        String sql = "select * from info_new_customer()";
+        try (Connection con = DBUtil.getConnection();
+            PreparedStatement ps = con.prepareStatement(sql)
+        ) {
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Customer(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("phone"),
+                            rs.getString("email"),
+                            rs.getString("address")
+                    );
+                }
+            }
+        }
+        catch (SQLException e) {
+            System.out.println("Lỗi SQL: " + e.getMessage());
+        }
+        catch (Exception e) {
+            System.out.println("Lỗi: " + e.getMessage());
+        }
+        return null;
+    }
 }

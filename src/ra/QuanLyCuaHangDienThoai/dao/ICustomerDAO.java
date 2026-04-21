@@ -11,4 +11,5 @@ public interface ICustomerDAO<T> {
     void deleteCustomer(int id);
     Customer getCustomerById(int id);
     List<T> listCustomer();
+    T infoNewCustomer();
 }
