@@ -7,9 +7,9 @@ public class Invoice {
     private int customerId;
     private LocalDateTime createdAt;
     private double totalAmount;
-    public Invoice(int customerId, int id, LocalDateTime createdAt, double totalAmount) {
-        this.customerId = customerId;
+    public Invoice(int id, int customerId, LocalDateTime createdAt, double totalAmount) {
         this.id = id;
+        this.customerId = customerId;
         this.createdAt = createdAt;
         this.totalAmount = totalAmount;
     }

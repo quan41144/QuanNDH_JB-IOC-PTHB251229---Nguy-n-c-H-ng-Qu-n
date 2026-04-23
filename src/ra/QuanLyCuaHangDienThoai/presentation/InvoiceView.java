@@ -104,15 +104,17 @@ public class InvoiceView {
                         case 1:
                             customerView.addCustomer();
                             Customer customer = customerDAO.infoNewCustomer();
-                            invoiceDAO.addInvoice(customer.getId());
+                            int newInvoiceId = invoiceDAO.addInvoice(customer.getId());
                             Invoice invoice = invoiceDAO.infoNewInvoice();
                             boolean isCheck1 = true;
+                            boolean hasItem = false;
                             while (isCheck1) {
                                 productView.showListProduct();
                                 if (productDAO.listProduct().isEmpty()) {
                                     System.err.println("Xin lỗi, chúng tôi không còn mặt hàng nào để bán!");
                                     customerDAO.deleteCustomer(customer.getId());
-                                    invoiceDAO.deleteInvoice(invoice.getId());
+                                    invoiceDAO.deleteInvoice(newInvoiceId);
+                                    isCheck1 = false;
                                     break;
                                 }
                                 System.out.print("Nhập ID sản phẩm muốn mua (Nhập -1 để kết thúc chọn sản phẩm): ");
@@ -143,11 +145,19 @@ public class InvoiceView {
                                             System.err.printf("Sản phẩm %s không đủ số lượng tồn kho!", product.getName());
                                             System.err.printf("Hiện tại sản phẩm %s chỉ còn %d trong kho! Vui lòng chọn lại số lượng hoặc bạn có thể tham khảo sản phẩm khác!\n", product.getName(), product.getStock());
                                         } else {
-                                            invoiceDetailsDAO.addInvoiceDetails(new InvoiceDetails(0, invoice.getId(), productId, quantity, 0));
-                                            invoiceDAO.addFinalInvoice(invoice.getId());
+                                            invoiceDetailsDAO.addInvoiceDetails(new InvoiceDetails(0, newInvoiceId,  productId, quantity, 0));
+                                            hasItem = true;
                                         }
                                     }
                                 }
+                            }
+                            if (hasItem) {
+                                invoiceDAO.addFinalInvoice(newInvoiceId);
+                            }
+                            else {
+                                invoiceDAO.deleteInvoice(newInvoiceId);
+                                customerDAO.deleteCustomer(customer.getId());
+                                System.out.println("Không có sản phẩm nào. Hủy hóa đơn.");
                             }
                             isCheck = false;
                             break;
@@ -161,14 +171,16 @@ public class InvoiceView {
                     }
                 }
             } else {
-                invoiceDAO.addInvoice(id);
+                int newInvoiceId = invoiceDAO.addInvoice(id);
                 Invoice invoice = invoiceDAO.infoNewInvoice();
                 boolean isCheck1 = true;
+                boolean hasItem = false;
                 while (isCheck1) {
                     productView.showListProduct();
                     if (productDAO.listProduct().isEmpty()) {
                         System.err.println("Xin lỗi, chúng tôi không còn mặt hàng nào để bán!");
-                        invoiceDAO.deleteInvoice(invoice.getId());
+                        invoiceDAO.deleteInvoice(newInvoiceId);
+                        isCheck1 = false;
                         break;
                     }
                     System.out.print("Nhập ID sản phẩm muốn mua (Nhập -1 để kết thúc chọn sản phẩm): ");
@@ -192,15 +204,25 @@ public class InvoiceView {
                         } else {
                             System.out.print("Nhập số lượng muốn mua: ");
                             int quantity = Integer.parseInt(sc.nextLine());
-                            if (!invoiceDetailsService.checkProductStock(productId, quantity)) {
+                            if (quantity <= 0) {
+                                System.err.println("Số lượng phải lớn hơn 0!");
+                            }
+                            else if (!invoiceDetailsService.checkProductStock(productId, quantity)) {
                                 System.err.printf("Sản phẩm %s không đủ số lượng tồn kho!\n", product.getName());
                                 System.err.printf("Hiện tại sản phẩm %s chỉ còn %d trong kho! Vui lòng chọn lại số lượng hoặc bạn có thể tham khảo sản phẩm khác!\n", product.getName(), product.getStock());
                             } else {
-                                invoiceDetailsDAO.addInvoiceDetails(new InvoiceDetails(0, invoice.getId(), productId, quantity, 0));
-                                invoiceDAO.addFinalInvoice(invoice.getId());
+                                invoiceDetailsDAO.addInvoiceDetails(new InvoiceDetails(0, newInvoiceId, productId, quantity, 0));
+                                hasItem = true;
                             }
                         }
                     }
+                }
+                if (hasItem) {
+                    invoiceDAO.addFinalInvoice(newInvoiceId);
+                }
+                else {
+                    invoiceDAO.deleteInvoice(newInvoiceId);
+                    System.out.println("Không có sản phẩm nào được mua! Hủy hóa đơn!");
                 }
             }
         } catch (NumberFormatException e) {
@@ -230,10 +252,10 @@ public class InvoiceView {
                         } else {
                             System.out.println("========== DANH SÁCH HÓA ĐƠN ==========");
                             for (Invoice invoice : list) {
-                                System.out.printf(" - ID Invoice: %d | Customer ID: %d | Customer Name: %s | created_at: %s | total_amount: %.2f\n",
+                                System.out.printf(" - ID Invoice: %d | Customer ID: %d | Customer Name: %s | created_at: %s | total_amount: %,.0f VNĐ\n",
                                         invoice.getId(),
                                         invoice.getCustomerId(),
-                                        customerDAO.getCustomerById(invoice.getId()).getName(),
+                                        customerDAO.getCustomerById(invoice.getCustomerId()).getName(),
                                         invoice.getCreatedAt(),
                                         invoice.getTotalAmount()
                                 );
@@ -255,10 +277,10 @@ public class InvoiceView {
                             } else {
                                 System.out.println("========== DANH SÁCH HÓA ĐƠN ==========");
                                 for (Invoice invoice : list2) {
-                                    System.out.printf(" - ID Invoice: %d | Customer ID: %d | Customer Name: %s | created_at: %s | total_amount: %.2f\n",
+                                    System.out.printf(" - ID Invoice: %d | Customer ID: %d | Customer Name: %s | created_at: %s | total_amount: %,.0f VNĐ\n",
                                             invoice.getId(),
                                             invoice.getCustomerId(),
-                                            customerDAO.getCustomerById(invoice.getId()).getName(),
+                                            customerDAO.getCustomerById(invoice.getCustomerId()).getName(),
                                             invoice.getCreatedAt(),
                                             invoice.getTotalAmount()
                                     );

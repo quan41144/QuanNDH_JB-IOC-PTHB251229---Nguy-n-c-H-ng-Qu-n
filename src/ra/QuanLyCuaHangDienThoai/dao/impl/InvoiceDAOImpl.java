@@ -11,16 +11,18 @@ import java.util.List;
 
 public class InvoiceDAOImpl implements IInvoiceDAO<Invoice> {
     @Override
-    public void addInvoice(int customer_id) {
-        String sql = "call add_invoice(?, ?)";
+    public int addInvoice(int customer_id) {
+        String sql = "select add_invoice(?)";
         int p_invoice_id = -1;
         try (Connection con = DBUtil.getConnection();
-             CallableStatement cs = con.prepareCall(sql)
+             PreparedStatement ps = con.prepareStatement(sql)
         ) {
-            cs.setInt(1, customer_id);
-            cs.registerOutParameter(2, java.sql.Types.INTEGER);
-            cs.execute();
-            p_invoice_id = cs.getInt(2);
+            ps.setInt(1, customer_id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    p_invoice_id = rs.getInt(1);
+                }
+            }
         }
         catch (SQLException e) {
             System.out.println("Lỗi SQL: " + e.getMessage());
@@ -28,6 +30,7 @@ public class InvoiceDAOImpl implements IInvoiceDAO<Invoice> {
         catch (Exception e) {
             System.out.println("Lỗi: " + e.getMessage());
         }
+        return p_invoice_id;
     }
 
     @Override
@@ -102,10 +105,10 @@ public class InvoiceDAOImpl implements IInvoiceDAO<Invoice> {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(new Invoice(
-                       rs.getInt("out_id"),
-                       rs.getInt("out_customer_id"),
-                       rs.getTimestamp("out_created_at").toLocalDateTime(),
-                       rs.getDouble("out_total_amount")
+                            rs.getInt("out_id"),
+                            rs.getInt("out_customer_id"),
+                            rs.getTimestamp("out_created_at").toLocalDateTime(),
+                            rs.getDouble("out_total_amount")
                     ));
                 }
             }

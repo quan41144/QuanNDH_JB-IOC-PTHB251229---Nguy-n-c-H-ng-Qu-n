@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface IInvoiceDAO<T> {
-    void addInvoice(int customer_id);
+    int addInvoice(int customer_id);
     T infoNewInvoice();
     void addFinalInvoice(int invoice_id);
     void deleteInvoice(int invoice_id);

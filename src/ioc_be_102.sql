@@ -423,33 +423,42 @@ end;
 $$;
 -- 1. Thêm mới đơn hàng
 -- Tạo mới một đơn hàng mới (trống thông tin)
-create or replace procedure add_invoice(
-	p_customer_id int,
-    out p_invoice_id int
+create or replace function add_invoice(
+    p_customer_id int
 )
+returns int
 language plpgsql
 as $$
+declare
+    v_invoice_id int;
 begin
-	insert into invoice(customer_id, created_at, total_amount) values
-	(p_customer_id, current_timestamp, 0)
-    returning id into p_invoice_id;
+    insert into invoice(customer_id, created_at, total_amount)
+    values (p_customer_id, current_timestamp, 0)
+    returning id into v_invoice_id;
+    
+    return v_invoice_id;
 end;
 $$;
 -- Lấy thông tin của đơn hàng được thêm vào mới nhất
 
 create or replace function info_new_invoice()
 returns table(
-	out_id int,
-	out_customer_id int,
-	out_created_at timestamp,
-	out_total_amount decimal
+    out_id int,
+    out_customer_id int,
+    out_created_at timestamp,
+    out_total_amount decimal
 )
 language plpgsql
 as $$
 begin
-	return query
-	select i.id, i.customer_id, i.created_at, i.total_amount
-	from invoice i where i.id = (select max(iv.id) from invoice iv);
+    return query
+    select 
+        i.id as out_id,
+        i.customer_id as out_customer_id,
+        i.created_at as out_created_at,
+        i.total_amount as out_total_amount
+    from invoice i 
+    where i.id = (select max(iv.id) from invoice iv);
 end;
 $$;
 select * from invoice_details;
@@ -547,7 +556,7 @@ language plpgsql
 as $$
 begin
 	return query
-	select ide.id, ide.product_id, ide.product_id, p.name, ide.quantity, ide.unit_price
+	select ide.id, ide.invoice_id, ide.product_id, p.name, ide.quantity, ide.unit_price
 	from invoice_details ide
 	join product p on ide.product_id = p.id
 	where ide.invoice_id = p_invoice_id
