@@ -38,12 +38,15 @@ public class InvoiceDetailsDAOImpl implements IInvoiceDetailsDAO<InvoiceDetails>
             ps.setInt(1, invoiceId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(new InvoiceDetails(
+                    InvoiceDetails detail = new InvoiceDetails(
                             rs.getInt("id"),
                             rs.getInt("invoice_id"),
                             rs.getInt("product_id"),
                             rs.getInt("quantity"),
-                            rs.getDouble("unit_price")));
+                            rs.getInt("unit_price")
+                    );
+
+                    list.add(detail);
                 }
             }
         }
@@ -53,6 +56,6 @@ public class InvoiceDetailsDAOImpl implements IInvoiceDetailsDAO<InvoiceDetails>
         catch (Exception e) {
             System.err.println("Lỗi: " + e.getMessage());
         }
-        return List.of();
+        return list;
     }
 }

@@ -66,25 +66,19 @@ public class InvoiceView {
     }
 
     private void showListInvoice() {
-        if (invoiceDAO.listInvoices().isEmpty()) {
-            System.err.println("Danh sách trống!");
-        } else {
-            System.out.println("========== DANH SÁCH HÓA ĐƠN ==========");
-            for (Invoice invoice : invoiceDAO.listInvoices()) {
-                System.out.printf("ID Invoice: %d | ID Customer: %d | Created_at: %s\n",
-                        invoice.getId(), invoice.getCustomerId(), invoice.getCreatedAt()
-                );
-                System.out.println("========== DANH SÁCH SẢN PHẨM ĐÃ MUA ==========");
-                List<InvoiceDetails> invoiceDetails = invoiceDetailsDAO.getInvoiceDetails(invoice.getId());
-                for (InvoiceDetails invoiceDetail : invoiceDetails) {
-                    String productName = productDAO.getProductById(invoiceDetail.getProductId()).getName();
-                    System.out.printf("   + %-25s | Số lượng: %-3d | Đơn giá: %,.0f VNĐ\n",
-                            productName,
-                            invoiceDetail.getQuantity(),
-                            invoiceDetail.getUnitPrice()
-                    );
+        List<Invoice> invoices = invoiceDAO.listInvoices();
+        for (Invoice invoice : invoices) {
+            System.out.println("ID Invoice: " + invoice.getId() + " | ID Customer: " + invoice.getCustomerId() + " | Created_at: " + invoice.getCreatedAt());
+            List<InvoiceDetails> details = invoiceDetailsDAO.getInvoiceDetails(invoice.getId());
+            if (details.isEmpty()) {
+                System.out.println("Danh sách trống");
+            } else {
+                for (InvoiceDetails d : details) {
+                    System.out.printf("   + SP ID: %d | SL: %d | Giá: %,.0f\n",
+                            d.getProductId(), d.getQuantity(), d.getUnitPrice());
                 }
             }
+            System.out.println("Total_amount: " + invoice.getTotalAmount());
             System.out.println("=======================================");
         }
     }

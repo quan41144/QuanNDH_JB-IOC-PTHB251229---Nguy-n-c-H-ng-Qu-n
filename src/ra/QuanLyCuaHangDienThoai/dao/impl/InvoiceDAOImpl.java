@@ -99,10 +99,10 @@ public class InvoiceDAOImpl implements IInvoiceDAO<Invoice> {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(new Invoice(
-                       rs.getInt("id"),
-                       rs.getInt("customer_id"),
-                       rs.getTimestamp("created_at").toLocalDateTime(),
-                       rs.getDouble("total_amount")
+                       rs.getInt("out_id"),
+                       rs.getInt("out_customer_id"),
+                       rs.getTimestamp("out_created_at").toLocalDateTime(),
+                       rs.getDouble("out_total_amount")
                     ));
                 }
             }

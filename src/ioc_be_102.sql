@@ -514,10 +514,10 @@ $$;
 -- 2. Hiển thị danh sách hóa đơn
 create or replace function list_invoice()
 returns table(
-	id int,
-	customer_id int,
-	created_at timestamp,
-	total_amount decimal
+	out_id int,
+	out_customer_id int,
+	out_created_at timestamp,
+	out_total_amount decimal
 )
 language plpgsql
 as $$
