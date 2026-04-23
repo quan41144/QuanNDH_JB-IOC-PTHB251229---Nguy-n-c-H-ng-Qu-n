@@ -11,7 +11,7 @@ import java.util.List;
 public class ProductDAOImpl implements IProductDAO<Product> {
     @Override
     public void addProduct(Product product) {
-        String sql = "select * from add_product(?, ?, ?, ?)";
+        String sql = "call add_product(?, ?, ?::decimal, ?)";
         try (Connection con = DBUtil.getConnection();
              CallableStatement cs = con.prepareCall(sql)) {
             cs.setString(1, product.getName());
@@ -37,7 +37,7 @@ public class ProductDAOImpl implements IProductDAO<Product> {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    System.out.printf("ID Product: %d | name: %s | brand: %s | price: %.2f | stock: %d",
+                    System.out.printf("ID Product: %d | name: %s | brand: %s | price: %.2f | stock: %d\n",
                             rs.getInt("id"),
                             rs.getString("name"),
                             rs.getString("brand"),
@@ -57,7 +57,7 @@ public class ProductDAOImpl implements IProductDAO<Product> {
 
     @Override
     public void updateProduct(Product product) {
-        String sql = "select * from update_product(?, ?, ?, ?, ?)";
+        String sql = "call update_product(?, ?, ?, ?::decimal, ?)";
         try (Connection con = DBUtil.getConnection();
              CallableStatement cs = con.prepareCall(sql)) {
             cs.setInt(1, product.getId());
@@ -78,7 +78,7 @@ public class ProductDAOImpl implements IProductDAO<Product> {
 
     @Override
     public void deleteProduct(int id) {
-        String sql = "select * from delete_product(?)";
+        String sql = "call delete_product(?)";
         try (Connection con = DBUtil.getConnection();
              CallableStatement cs = con.prepareCall(sql)) {
             cs.setInt(1, id);
@@ -148,7 +148,7 @@ public class ProductDAOImpl implements IProductDAO<Product> {
     @Override
     public List<Product> searchProductByPrice(double begin, double end) {
         List<Product> list = new ArrayList<>();
-        String sql = "select * from search_product_by_price(?, ?)";
+        String sql = "select * from search_product_by_price(?::decimal, ?::decimal)";
         try (Connection con = DBUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setDouble(1, begin);

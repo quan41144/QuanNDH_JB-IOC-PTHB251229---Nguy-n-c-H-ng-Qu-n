@@ -11,7 +11,7 @@ import java.util.List;
 public class InvoiceDetailsDAOImpl implements IInvoiceDetailsDAO<InvoiceDetails> {
     @Override
     public void addInvoiceDetails(InvoiceDetails invoiceDetails) {
-        String sql = "select * from add_invoice_details(?, ?, ?)";
+        String sql = "call add_invoice_details(?, ?, ?)";
         try (Connection con = DBUtil.getConnection();
              CallableStatement cs = con.prepareCall(sql)
         ) {

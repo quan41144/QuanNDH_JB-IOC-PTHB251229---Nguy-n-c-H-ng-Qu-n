@@ -143,8 +143,8 @@ as $$
 begin
 	-- Không tồn tại sản phẩm có id ... (exception)
 	return query
-	select id, name, brand, price, stock
-	from product where id = p_id;
+	select p.id, p.name, p.brand, p.price, p.stock
+	from product p where p.id = p_id;
 end;
 $$;
 -- 3. Cập nhật thông tin của sản phẩm (không cập nhật id)
@@ -192,9 +192,9 @@ language plpgsql
 as $$
 begin
 	return query
-	select id, name, brand, price, stock
-	from product
-	order by id;
+	select p.id, p.name, p.brand, p.price, p.stock
+	from product p
+	order by p.id;
 end;
 $$;
 -- 6. Tìm kiếm điện thoại theo brand (tìm kiếm gần đúng)
@@ -214,10 +214,10 @@ as $$
 begin
 	-- Không tồn tại sản phẩm có brand phù hợp ... (exception)
 	return query
-	select id, name, brand, price, stock
-	from product
-	where brand ilike '%' || p_brand || '%'
-	order by id;
+	select p.id, p.name, p.brand, p.price, p.stock
+	from product p
+	where p.brand ilike '%' || p_brand || '%'
+	order by p.id;
 end;
 $$;
 
@@ -237,10 +237,10 @@ language plpgsql
 as $$
 begin
 	return query
-	select id, name, brand, price, stock
-	from product
-	where price between p_begin_price and p_end_price
-	order by id;
+	select p.id, p.name, p.brand, p.price, p.stock
+	from product p
+	where p.price between p_begin_price and p_end_price
+	order by p.id;
 end;
 $$;
 -- Kiểm tra số lượng tồn kho có còn đủ hay không
@@ -274,10 +274,10 @@ language plpgsql
 as $$
 begin
 	return query
-	select id, name, brand, price, stock
-	from product
-	where name ilike '%' || p_name || '%' and stock >= p_stock
-	order by id;
+	select p.id, p.name, p.brand, p.price, p.stock
+	from product p
+	where p.name ilike '%' || p_name || '%' and p.stock >= p_stock
+	order by p.id;
 end;
 $$;
 
@@ -353,9 +353,9 @@ language plpgsql
 as $$
 begin
 	return query
-	select id, name, phone, email, address
-	from customer
-	where id = p_id;
+	select c.id, c.name, c.phone, c.email, c.address
+	from customer c
+	where c.id = p_id;
 end;
 $$;
 -- 2. Cập nhật khách hàng
@@ -396,9 +396,9 @@ language plpgsql
 as $$
 begin
 	return query
-	select id, name, phone, email, address
-	from customer
-	order by id;
+	select c.id, c.name, c.phone, c.email, c.address
+	from customer c
+	order by c.id;
 end;
 $$;
 
@@ -417,8 +417,8 @@ language plpgsql
 as $$
 begin
 	return query
-	select id, name, phone, email, address
-	from customer where id = (select max(id) from customer);
+	select c.id, c.name, c.phone, c.email, c.address
+	from customer c where c.id = (select max(cus.id) from customer cus);
 end;
 $$;
 -- 1. Thêm mới đơn hàng
@@ -445,8 +445,8 @@ language plpgsql
 as $$
 begin
 	return query
-	select id, customer_id, created_at, total_amount
-	from invoice where id = (select max(id) from invoice);
+	select i.id, i.customer_id, i.created_at, i.total_amount
+	from invoice i where i.id = (select max(iv.id) from invoice iv);
 end;
 $$;
 select * from invoice_details;
@@ -481,7 +481,7 @@ as $$
 declare v_stock int;
 begin
 	select stock into v_stock from product where id = p_product_id;
-	if (stock >= p_quantity) then
+	if (v_stock >= p_quantity) then
 		return true;
 	end if;
 	return false;
@@ -523,9 +523,9 @@ language plpgsql
 as $$
 begin
 	return query
-	select id, customer_id, created_at, total_amount
-	from invoice
-	order by id;
+	select i.id, i.customer_id, i.created_at, i.total_amount
+	from invoice i
+	order by i.id;
 end;
 $$;
 -- Hiển thị danh sách của chi tiết hóa đơn
@@ -665,3 +665,32 @@ begin
 	return false;
 end;
 $$;
+-- data mẫu để test
+INSERT INTO product (name, brand, price, stock) VALUES
+('iPhone 15 Pro Max', 'Apple', 28500000, 15),
+('iPhone 14', 'Apple', 16000000, 10),
+('iPhone 13', 'Apple', 13500000, 8),
+('Samsung Galaxy S24 Ultra', 'Samsung', 26000000, 12),
+('Samsung Galaxy Z Fold5', 'Samsung', 32000000, 5),
+('Samsung Galaxy A54', 'Samsung', 8500000, 25),
+('Xiaomi 14 Pro', 'Xiaomi', 18000000, 10),
+('Redmi Note 13 Pro', 'Xiaomi', 6500000, 30),
+('OPPO Reno11', 'OPPO', 10500000, 20),
+('OPPO Find N3 Flip', 'OPPO', 21000000, 7),
+('iPad Air M2', 'Apple', 17500000, 14),
+('MacBook Air M3', 'Apple', 27900000, 9),
+('Sony Xperia 1 V', 'Sony', 23000000, 4),
+('Google Pixel 8 Pro', 'Google', 19500000, 6),
+('Realme GT5', 'Realme', 11000000, 18),
+('Vivo V30 Pro', 'Vivo', 12500000, 15),
+('Nokia G42 5G', 'Nokia', 4500000, 40),
+('ASUS ROG Phone 8', 'ASUS', 24500000, 5),
+('Huawei Mate 60 Pro', 'Huawei', 22000000, 3),
+('iPhone SE 2024', 'Apple', 11500000, 12);
+
+select * from invoice_details;
+select * from customer;
+select * from invoice;
+select * from admin;
+insert into admin(username, password) values
+('quan41144', '12345');

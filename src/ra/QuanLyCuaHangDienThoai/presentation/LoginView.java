@@ -22,6 +22,7 @@ public class LoginView {
             String password = sc.nextLine();
             System.out.println("========================================");
             if (adminService.login(username, password)) {
+                System.out.println("Đăng nhập thành công!");
                 boolean isCheck = true;
                 while (isCheck) {
                     System.out.println("========== MENU CHÍNH ==========");

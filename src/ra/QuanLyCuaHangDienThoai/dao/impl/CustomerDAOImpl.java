@@ -11,7 +11,7 @@ import java.util.List;
 public class CustomerDAOImpl implements ICustomerDAO<Customer> {
     @Override
     public void addCustomer(Customer customer) {
-        String sql = "select * from add_customer(?, ?, ?, ?)";
+        String sql = "call add_customer(?, ?, ?, ?)";
         try (Connection con = DBUtil.getConnection();
              CallableStatement cs = con.prepareCall(sql)
         ) {
@@ -38,13 +38,15 @@ public class CustomerDAOImpl implements ICustomerDAO<Customer> {
         ) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
-                System.out.printf("ID Customer: %d | Name: %s | Phone: %s | Email: %s | Address: %s\n",
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("phone"),
-                        rs.getString("email"),
-                        rs.getString("address")
-                );
+                while (rs.next()) {
+                    System.out.printf("ID Customer: %d | Name: %s | Phone: %s | Email: %s | Address: %s\n",
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("phone"),
+                            rs.getString("email"),
+                            rs.getString("address")
+                    );
+                }
             }
         }
         catch (SQLException e) {
@@ -57,7 +59,7 @@ public class CustomerDAOImpl implements ICustomerDAO<Customer> {
 
     @Override
     public void updateCustomer(Customer customer) {
-        String sql = "select * from update_customer(?, ?, ?, ?, ?)";
+        String sql = "call update_customer(?, ?, ?, ?, ?)";
         try (Connection con = DBUtil.getConnection();
             CallableStatement cs = con.prepareCall(sql)
         ) {
@@ -79,7 +81,7 @@ public class CustomerDAOImpl implements ICustomerDAO<Customer> {
 
     @Override
     public void deleteCustomer(int id) {
-        String sql = "select * from delete_customer(?)";
+        String sql = "call delete_customer(?)";
         try (Connection con = DBUtil.getConnection();
             CallableStatement cs = con.prepareCall(sql)
         ) {
@@ -131,13 +133,15 @@ public class CustomerDAOImpl implements ICustomerDAO<Customer> {
             PreparedStatement ps = con.prepareStatement(sql)
         ) {
             try (ResultSet rs = ps.executeQuery()) {
-                customers.add(new Customer(
-                   rs.getInt("id"),
-                   rs.getString("name"),
-                   rs.getString("phone"),
-                   rs.getString("email"),
-                   rs.getString("address"))
-                );
+                while (rs.next()) {
+                    customers.add(new Customer(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("phone"),
+                            rs.getString("email"),
+                            rs.getString("address"))
+                    );
+                }
             }
         }
         catch (SQLException e) {

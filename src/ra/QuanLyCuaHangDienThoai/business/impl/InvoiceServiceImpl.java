@@ -16,6 +16,7 @@ public class InvoiceServiceImpl implements IInvoiceService<Invoice> {
         try (Connection con = DBUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)
         ) {
+            ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getBoolean(1);

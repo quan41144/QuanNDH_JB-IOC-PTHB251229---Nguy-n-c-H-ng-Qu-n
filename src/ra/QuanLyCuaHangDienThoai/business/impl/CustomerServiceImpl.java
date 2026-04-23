@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public class CustomerServiceImpl implements ICustomerService<Customer> {
     @Override
     public boolean isExistPhone(String phone) {
-        String sql = "select * from isExit_phone(?)";
+        String sql = "select * from isExist_phone(?)";
         try (Connection con = DBUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)
         ) {
@@ -34,7 +34,7 @@ public class CustomerServiceImpl implements ICustomerService<Customer> {
 
     @Override
     public boolean isExistEmail(String email) {
-        String sql = "select * from isExit_email(?)";
+        String sql = "select * from isExist_email(?)";
         try (Connection con = DBUtil.getConnection();
             PreparedStatement ps = con.prepareStatement(sql)
         ) {
@@ -56,7 +56,7 @@ public class CustomerServiceImpl implements ICustomerService<Customer> {
 
     @Override
     public boolean isExistCustomerId(int id) {
-        String sql = "select * from isExit_customer_id(?)";
+        String sql = "select * from isExist_customer_id(?)";
         try (Connection con = DBUtil.getConnection();
             PreparedStatement ps = con.prepareStatement(sql)
         ) {

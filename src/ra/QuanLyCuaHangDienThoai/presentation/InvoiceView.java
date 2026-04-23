@@ -77,8 +77,11 @@ public class InvoiceView {
                 System.out.println("========== DANH SÁCH SẢN PHẨM ĐÃ MUA ==========");
                 List<InvoiceDetails> invoiceDetails = invoiceDetailsDAO.getInvoiceDetails(invoice.getId());
                 for (InvoiceDetails invoiceDetail : invoiceDetails) {
-                    System.out.printf(" - ID Product: %d | Product Name: %s | Quantity: %d\n",
-                            invoiceDetail.getProductId(), productDAO.getProductById(invoiceDetail.getProductId()), invoiceDetail.getQuantity()
+                    String productName = productDAO.getProductById(invoiceDetail.getProductId()).getName();
+                    System.out.printf("   + %-25s | Số lượng: %-3d | Đơn giá: %,.0f VNĐ\n",
+                            productName,
+                            invoiceDetail.getQuantity(),
+                            invoiceDetail.getUnitPrice()
                     );
                 }
             }

@@ -67,29 +67,31 @@ public class CustomerView {
         System.out.print("Nhập số điện thoại: ");
         String phone = sc.nextLine();
         while (customerService.isExistPhone(phone)) {
-            System.err.printf("Số điện thoại %s đã tồn tại!", phone);
+            System.err.printf("Số điện thoại %s đã tồn tại!\n", phone);
             System.out.print("Nhập lại số điện thoại: ");
             phone = sc.nextLine();
         }
         System.out.print("Nhập Email: ");
         String email = sc.nextLine();
         while (customerService.isExistEmail(email)) {
-            System.err.printf("Email %s đã tồn tại!", email);
+            System.err.printf("Email %s đã tồn tại!\n", email);
             System.out.print("Nhập lại Email: ");
             email = sc.nextLine();
         }
-        System.out.println("Nhập địa chỉ: ");
+        System.out.print("Nhập địa chỉ: ");
         String address = sc.nextLine();
         customerDAO.addCustomer(new Customer(0 , name, phone, email, address));
     }
     private void updateCustomer() {
         try {
-            System.out.print("Nhập ID khách hàng để cập nhật: ");
+            System.out.print("Nhập ID khách hàng để cập nhật (-1 để kết thúc cập nhật): ");
             int id = Integer.parseInt(sc.nextLine());
+            if (id == -1) return;
             while (!customerService.isExistCustomerId(id)) {
-                System.err.printf("Không tồn tại khách hàng có id %d", id);
-                System.out.print("Nhập lại ID khách hàng để cập nhật: ");
+                System.err.println("Không tồn tại khách hàng có id " + id);
+                System.out.print("Nhập lại ID khách hàng để cập nhật (-1 để kết thúc cập nhật): ");
                 id = Integer.parseInt(sc.nextLine());
+                if (id == -1) return;
             }
             System.out.printf("Thông tin hiện tại của khách hàng có id %d:\n", id);
             customerDAO.infoCustomer(id);
@@ -105,8 +107,8 @@ public class CustomerView {
             if (phone.isEmpty()) {
                 phone = oldCustomer.getPhone();
             }
-            while (customerService.isExistPhone(phone)) {
-                System.err.printf("Số điện thoại %s đã tồn tại!", phone);
+            while (!phone.equalsIgnoreCase(oldCustomer.getPhone()) && customerService.isExistPhone(phone)) {
+                System.err.printf("Số điện thoại %s đã tồn tại!\n", phone);
                 System.out.print("Nhập lại số điện thoại muốn thay đổi (enter để giữ nguyên): ");
                 phone = sc.nextLine();
             }
@@ -115,8 +117,8 @@ public class CustomerView {
             if (email.isEmpty()) {
                 email = oldCustomer.getEmail();
             }
-            while (customerService.isExistEmail(email)) {
-                System.err.printf("Email %s đã tồn tại!", email);
+            while (!email.equalsIgnoreCase(oldCustomer.getEmail()) && customerService.isExistEmail(email)) {
+                System.err.printf("Email %s đã tồn tại!\n", email);
                 System.out.print("Nhập lại Email muốn thay đổi (enter để giữ nguyên): ");
                 email = sc.nextLine();
             }
@@ -136,12 +138,14 @@ public class CustomerView {
     }
     private void deleteCustomer() {
         try {
-            System.out.print("Nhập ID khách hàng để xóa: ");
+            System.out.print("Nhập ID khách hàng để xóa (-1 để kết thúc xóa): ");
             int id = Integer.parseInt(sc.nextLine());
+            if (id == -1) return;
             while (!customerService.isExistCustomerId(id)) {
-                System.err.printf("Không tồn tại khách hàng có id %d", id);
-                System.out.print("Nhập lại ID khách hàng để xóa: ");
+                System.err.printf("Không tồn tại khách hàng có id %d\n", id);
+                System.out.print("Nhập lại ID khách hàng để xóa (-1 để kết thúc xóa): ");
                 id = Integer.parseInt(sc.nextLine());
+                if (id == -1) return;
             }
             boolean isCheck = true;
             while (isCheck) {
@@ -160,7 +164,7 @@ public class CustomerView {
                         isCheck = false;
                         break;
                     default:
-                        System.out.println("Invalid choice.");
+                        System.err.println("Invalid choice.");
                         System.out.println("=====================================");
                         break;
                 }

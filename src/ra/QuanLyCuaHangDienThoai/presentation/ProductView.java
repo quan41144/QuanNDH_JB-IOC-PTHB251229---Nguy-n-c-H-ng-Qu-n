@@ -243,7 +243,7 @@ public class ProductView {
         try {
             System.out.print("Nhập từ khóa để tìm kiếm tên sản phẩm: ");
             String name = sc.nextLine();
-            System.out.println("Nhập số lượng tồn kho mà bạn cần: ");
+            System.out.print("Nhập số lượng tồn kho mà bạn cần: ");
             int stock = Integer.parseInt(sc.nextLine());
             if (productDAO.searchProductByName(name, stock).isEmpty()) {
                 System.out.println("Không tồn tại sản phẩm phù hợp!");

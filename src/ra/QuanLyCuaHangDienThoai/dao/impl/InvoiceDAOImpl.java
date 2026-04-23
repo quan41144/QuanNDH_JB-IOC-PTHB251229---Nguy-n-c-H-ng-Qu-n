@@ -12,7 +12,7 @@ import java.util.List;
 public class InvoiceDAOImpl implements IInvoiceDAO<Invoice> {
     @Override
     public void addInvoice(int customer_id) {
-        String sql = "select * from add_invoice(?)";
+        String sql = "call add_invoice(?)";
         try (Connection con = DBUtil.getConnection();
              CallableStatement cs = con.prepareCall(sql)
         ) {
@@ -55,7 +55,7 @@ public class InvoiceDAOImpl implements IInvoiceDAO<Invoice> {
 
     @Override
     public void addFinalInvoice(int invoice_id) {
-        String sql = "select * from add_final_invoice(?)";
+        String sql = "call add_final_invoice(?)";
         try (Connection con = DBUtil.getConnection();
             CallableStatement cs = con.prepareCall(sql)
         ) {
@@ -73,7 +73,7 @@ public class InvoiceDAOImpl implements IInvoiceDAO<Invoice> {
 
     @Override
     public void deleteInvoice(int invoice_id) {
-        String sql = "select * from delete_invoice(?)";
+        String sql = "call delete_invoice(?)";
         try (Connection con = DBUtil.getConnection();
             CallableStatement cs = con.prepareCall(sql)
         ) {
