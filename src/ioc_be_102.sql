@@ -436,12 +436,13 @@ begin
 end;
 $$;
 -- Lấy thông tin của đơn hàng được thêm vào mới nhất
+
 create or replace function info_new_invoice()
 returns table(
-	id int,
-	customer_id int,
-	created_at timestamp,
-	total_amount decimal
+	out_id int,
+	out_customer_id int,
+	out_created_at timestamp,
+	out_total_amount decimal
 )
 language plpgsql
 as $$
