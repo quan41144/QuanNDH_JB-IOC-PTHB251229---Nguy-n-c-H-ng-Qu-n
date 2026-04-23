@@ -67,7 +67,7 @@ public class ProductView {
         } else {
             System.out.println("========== DANH SÁCH SẢN PHẨM ==========");
             for (Product p : list) {
-                System.out.printf(" - ID Product: %d | name: %s | brand: %s | price: %.2f | stock: %d\n",
+                System.out.printf(" - ID Product: %d | name: %s | brand: %s | price: %,.0f VNĐ | stock: %d\n",
                         p.getId(), p.getName(), p.getBrand(), p.getPrice(), p.getStock());
             }
             System.out.println("========================================");

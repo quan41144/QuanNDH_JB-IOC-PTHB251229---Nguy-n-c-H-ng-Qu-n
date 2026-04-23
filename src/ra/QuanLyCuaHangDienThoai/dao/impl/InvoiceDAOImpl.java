@@ -17,6 +17,7 @@ public class InvoiceDAOImpl implements IInvoiceDAO<Invoice> {
              CallableStatement cs = con.prepareCall(sql)
         ) {
             cs.setInt(1, customer_id);
+            cs.registerOutParameter(2, java.sql.Types.INTEGER);
             cs.execute();
         }
         catch (SQLException e) {

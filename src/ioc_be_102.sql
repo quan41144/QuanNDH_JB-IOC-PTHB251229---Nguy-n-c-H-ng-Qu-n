@@ -424,13 +424,15 @@ $$;
 -- 1. Thêm mới đơn hàng
 -- Tạo mới một đơn hàng mới (trống thông tin)
 create or replace procedure add_invoice(
-	p_customer_id int
+	p_customer_id int,
+    out p_invoice_id int
 )
 language plpgsql
 as $$
 begin
 	insert into invoice(customer_id, created_at, total_amount) values
-	(p_customer_id, current_timestamp, 0);
+	(p_customer_id, current_timestamp, 0)
+    returning id into p_invoice_id;
 end;
 $$;
 -- Lấy thông tin của đơn hàng được thêm vào mới nhất
@@ -498,7 +500,7 @@ declare
 begin
 	select coalesce(sum(ide.unit_price), 0) into v_total_amount
 	from invoice_details ide where ide.invoice_id = p_id;
-	update invoice set total_amount = p_total_amount where id = p_id;
+	update invoice set total_amount = v_total_amount where id = p_id;
 end;
 $$;
 -- Xóa đơn hàng theo id
@@ -688,9 +690,22 @@ INSERT INTO product (name, brand, price, stock) VALUES
 ('Huawei Mate 60 Pro', 'Huawei', 22000000, 3),
 ('iPhone SE 2024', 'Apple', 11500000, 12);
 
+INSERT INTO customer (name, phone, address, email) VALUES
+('Nguyễn Khánh Vân', '0912345678', 'Hà Nội', 'van.nk@gmail.com'),
+('Lê Hoàng Nam', '0987654321', 'TP.HCM', 'nam.lh@yahoo.com'),
+('Trần Thị Mai', '0905123456', 'Đà Nẵng', 'mai.tt@hotmail.com'),
+('Phạm Minh Đức', '0933445566', 'Cần Thơ', 'duc.pm@outlook.com'),
+('Đỗ Thùy Linh', '0944556677', 'Hải Phòng', 'linh.dt@gmail.com'),
+('Hoàng Văn Thái', '0966778899', 'Nghệ An', 'thai.hv@gmail.com'),
+('Bùi Phương Anh', '0922113344', 'Huế', 'anh.bp@gmail.com'),
+('Vũ Anh Tuấn', '0977889900', 'Quảng Ninh', 'tuan.va@gmail.com'),
+('Đặng Thu Hà', '0911223344', 'Nam Định', 'ha.dt@gmail.com'),
+('Lý Gia Bảo', '0955667788', 'Bình Dương', 'bao.lg@gmail.com');
+
 select * from invoice_details;
 select * from customer;
 select * from invoice;
 select * from admin;
+select * from product;
 insert into admin(username, password) values
 ('quan41144', '12345');

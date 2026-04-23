@@ -49,35 +49,58 @@ public class RevenueView {
     private void dailyRevenueView() {
         System.out.print("Nhập ngày/tháng/năm: ");
         LocalDate date = LocalDate.parse(sc.nextLine(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        if (!date.isBefore(LocalDate.now())) {
+        if (!date.isBefore(LocalDate.now().plusDays(1))) {
             System.err.printf("Thời gian không đúng, vì hiện tại mới đang là %s", LocalDate.now());
             return;
         }
         double res = invoiceDAO.dailyRevenue(date);
-        System.out.println("Tổng doanh thu của ngày " + date + " là: " + res);
+        System.out.print("Tổng doanh thu của ngày " + date + " là: ");
+        System.out.printf("%,.0f VNĐ\n", res);
     }
     private void monthlyRevenueView() {
-        System.out.print("Nhập tháng: ");
-        int month = Integer.parseInt(sc.nextLine());
-        System.out.print("Nhập năm: ");
-        int year = Integer.parseInt(sc.nextLine());
-        LocalDate date = LocalDate.of(year, month, 1);
-        if (!date.isBefore(LocalDate.now())) {
-            System.err.printf("Thời gian không đúng, vì hiện tại mới đang là %s", LocalDate.now());
-            return;
+        try {
+            System.out.print("Nhập tháng: ");
+            int month = Integer.parseInt(sc.nextLine());
+            while (month < 1 || month > 12) {
+                System.err.println("Nhập sai tháng (phải từ 1 đến 12)!");
+                System.out.println("Nhập lại tháng (-1 để thoát): ");
+                month = Integer.parseInt(sc.nextLine());
+                if (month == -1) return;
+            }
+            System.out.print("Nhập năm: ");
+            int year = Integer.parseInt(sc.nextLine());
+            LocalDate date = LocalDate.of(year, month, 1);
+            if (!date.isBefore(LocalDate.now().plusDays(1))) {
+                System.err.printf("Thời gian không đúng, vì hiện tại mới đang là %s", LocalDate.now());
+                return;
+            }
+            double res = invoiceDAO.monthlyRevenue(month, year);
+            System.out.print("Tổng doanh thu của tháng " + month + " năm " + year + " là: ");
+            System.out.printf("%,.0f VNĐ\n", res);
         }
-        double res = invoiceDAO.monthlyRevenue(month, year);
-        System.out.println("Tổng doanh thu của tháng " + month + " năm " + year + " là: " + res);
+        catch (NumberFormatException e) {
+            System.err.println("Không đúng định dạng của số!");
+        } catch (Exception e) {
+            System.err.println("Lỗi: " + e.getMessage());
+        }
     }
     private void yearlyRevenueView() {
-        System.out.print("Nhập năm: ");
-        int year = Integer.parseInt(sc.nextLine());
-        LocalDate date = LocalDate.of(year, 1, 1);
-        if (!date.isBefore(LocalDate.now())) {
-            System.err.printf("Thời gian không đúng, vì hiện tại mới đang là %s", LocalDate.now());
-            return;
+        try {
+            System.out.print("Nhập năm: ");
+            int year = Integer.parseInt(sc.nextLine());
+            LocalDate date = LocalDate.of(year, 1, 1);
+            if (!date.isBefore(LocalDate.now().plusDays(1))) {
+                System.err.printf("Thời gian không đúng, vì hiện tại mới đang là %s", LocalDate.now());
+                return;
+            }
+            double res = invoiceDAO.yearRevenue(year);
+            System.out.print("Tổng doanh thu của năm " + year + " là: ");
+            System.out.printf("%,.0f VNĐ\n", res);
         }
-        double res = invoiceDAO.yearRevenue(year);
-        System.out.println("Tổng doanh thu của năm " + year + " là: " + res);
+        catch (NumberFormatException e) {
+            System.err.println("Không đúng định dạng của số!");
+        } catch (Exception e) {
+            System.err.println("Lỗi: " + e.getMessage());
+        }
     }
 }
