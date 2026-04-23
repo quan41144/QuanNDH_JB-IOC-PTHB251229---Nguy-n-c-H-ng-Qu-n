@@ -12,6 +12,10 @@ import ra.QuanLyCuaHangDienThoai.model.Invoice;
 import ra.QuanLyCuaHangDienThoai.model.InvoiceDetails;
 import ra.QuanLyCuaHangDienThoai.model.Product;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Scanner;
 
 public class InvoiceView {
@@ -19,12 +23,13 @@ public class InvoiceView {
     private ProductDAOImpl productDAO = new ProductDAOImpl();
     private ProductServiceImpl productService = new ProductServiceImpl();
     private CustomerView customerView = new CustomerView();
-    private CustomerDAOImpl customerDAO =  new CustomerDAOImpl();
+    private CustomerDAOImpl customerDAO = new CustomerDAOImpl();
     private InvoiceDAOImpl invoiceDAO = new InvoiceDAOImpl();
     private InvoiceServiceImpl invoiceService = new InvoiceServiceImpl();
     private InvoiceDetailsDAOImpl invoiceDetailsDAO = new InvoiceDetailsDAOImpl();
     private InvoiceDetailsServiceImpl invoiceDetailsService = new InvoiceDetailsServiceImpl();
     private Scanner sc = new Scanner(System.in);
+
     public void displayInvoiceMenu() {
         while (true) {
             System.out.println("========== QUẢN LÝ HÓA ĐƠN ==========");
@@ -52,29 +57,35 @@ public class InvoiceView {
                         System.err.println("Invalid choice.");
                         break;
                 }
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 System.err.println("Không đúng định dạng của số!");
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.err.println("Lỗi: " + e.getMessage());
             }
         }
     }
+
     private void showListInvoice() {
         if (invoiceDAO.listInvoices().isEmpty()) {
             System.err.println("Danh sách trống!");
-        }
-        else {
+        } else {
             System.out.println("========== DANH SÁCH HÓA ĐƠN ==========");
             for (Invoice invoice : invoiceDAO.listInvoices()) {
-                System.out.printf("ID Invoice: %d | ID Customer: %d | Created_at: %s | Total_Amount: %.2f\n",
-                        invoice.getId(), invoice.getCustomerId(), invoice.getCreatedAt(), invoice.getTotalAmount()
+                System.out.printf("ID Invoice: %d | ID Customer: %d | Created_at: %s\n",
+                        invoice.getId(), invoice.getCustomerId(), invoice.getCreatedAt()
                 );
+                System.out.println("========== DANH SÁCH SẢN PHẨM ĐÃ MUA ==========");
+                List<InvoiceDetails> invoiceDetails = invoiceDetailsDAO.getInvoiceDetails(invoice.getId());
+                for (InvoiceDetails invoiceDetail : invoiceDetails) {
+                    System.out.printf(" - ID Product: %d | Product Name: %s | Quantity: %d\n",
+                            invoiceDetail.getProductId(), productDAO.getProductById(invoiceDetail.getProductId()), invoiceDetail.getQuantity()
+                    );
+                }
             }
             System.out.println("=======================================");
         }
     }
+
     private void addInvoice() {
         try {
             System.out.print("Nhập ID khách hàng: ");
@@ -100,7 +111,8 @@ public class InvoiceView {
                                 productView.showListProduct();
                                 if (productDAO.listProduct().isEmpty()) {
                                     System.out.println("Xin lỗi, chúng tôi không còn mặt hàng nào để bán!");
-//                                    xóa khách hàng và xóa đơn hàng mới nhất
+                                    customerDAO.deleteCustomer(customer.getId());
+                                    invoiceDAO.deleteInvoice(invoice.getId());
                                     break;
                                 }
                                 System.out.print("Nhập ID sản phẩm muốn mua (Nhập -1 để kết thúc chọn sản phẩm): ");
@@ -118,14 +130,19 @@ public class InvoiceView {
                                     }
                                 }
                                 if (productService.isExistProductId(productId)) {
-                                    System.out.print("Nhập số lượng muốn mua: ");
-                                    int quantity = Integer.parseInt(sc.nextLine());
                                     Product product = productDAO.getProductById(productId);
-                                    if (!invoiceDetailsService.checkProductStock(productId, quantity)) {
-                                        System.err.printf("Sản phẩm %s không đủ số lượng tồn kho!", product.getName());
-                                    }
-                                    else {
-                                        invoiceDetailsDAO.addInvoiceDetails(new InvoiceDetails(invoice.getId(), productId, quantity, 0));
+                                    if (!productService.isCheckProductStock(productId)) {
+                                        System.out.printf("Sản phẩm %s đã được bán hết! Vui lòng chọn sản phẩm khác!", product.getName());
+                                    } else {
+                                        System.out.print("Nhập số lượng muốn mua: ");
+                                        int quantity = Integer.parseInt(sc.nextLine());
+                                        if (!invoiceDetailsService.checkProductStock(productId, quantity)) {
+                                            System.err.printf("Sản phẩm %s không đủ số lượng tồn kho!", product.getName());
+                                            System.out.printf("Hiện tại sản phẩm %s chỉ còn %d trong kho! Vui lòng chọn lại số lượng hoặc bạn có thể tham khảo sản phẩm khác!\n", product.getName(), product.getStock());
+                                        } else {
+                                            invoiceDetailsDAO.addInvoiceDetails(new InvoiceDetails(0, invoice.getId(), productId, quantity, 0));
+                                            invoiceDAO.addFinalInvoice(invoice.getId());
+                                        }
                                     }
                                 }
                             }
@@ -140,8 +157,7 @@ public class InvoiceView {
                             break;
                     }
                 }
-            }
-            else {
+            } else {
                 invoiceDAO.addInvoice(id);
                 Invoice invoice = invoiceDAO.infoNewInvoice();
                 boolean isCheck1 = true;
@@ -149,7 +165,7 @@ public class InvoiceView {
                     productView.showListProduct();
                     if (productDAO.listProduct().isEmpty()) {
                         System.out.println("Xin lỗi, chúng tôi không còn mặt hàng nào để bán!");
-//                                     xóa đơn hàng mới nhất
+                        invoiceDAO.deleteInvoice(invoice.getId());
                         break;
                     }
                     System.out.print("Nhập ID sản phẩm muốn mua (Nhập -1 để kết thúc chọn sản phẩm): ");
@@ -167,23 +183,97 @@ public class InvoiceView {
                         }
                     }
                     if (productService.isExistProductId(productId)) {
-                        System.out.print("Nhập số lượng muốn mua: ");
-                        int quantity = Integer.parseInt(sc.nextLine());
                         Product product = productDAO.getProductById(productId);
-                        if (!invoiceDetailsService.checkProductStock(productId, quantity)) {
-                            System.err.printf("Sản phẩm %s không đủ số lượng tồn kho!", product.getName());
-                        }
-                        else {
-                            invoiceDetailsDAO.addInvoiceDetails(new InvoiceDetails(invoice.getId(), productId, quantity, 0));
+                        if (!productService.isCheckProductStock(productId)) {
+                            System.out.printf("Sản phẩm %s đã được bán hết! Vui lòng chọn sản phẩm khác!", product.getName());
+                        } else {
+                            System.out.print("Nhập số lượng muốn mua: ");
+                            int quantity = Integer.parseInt(sc.nextLine());
+                            if (!invoiceDetailsService.checkProductStock(productId, quantity)) {
+                                System.err.printf("Sản phẩm %s không đủ số lượng tồn kho!", product.getName());
+                                System.out.printf("Hiện tại sản phẩm %s chỉ còn %d trong kho! Vui lòng chọn lại số lượng hoặc bạn có thể tham khảo sản phẩm khác!\n", product.getName(), product.getStock());
+                            } else {
+                                invoiceDetailsDAO.addInvoiceDetails(new InvoiceDetails(0, invoice.getId(), productId, quantity, 0));
+                                invoiceDAO.addFinalInvoice(invoice.getId());
+                            }
                         }
                     }
                 }
             }
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             System.err.println("Không đúng định dạng của số!");
+        } catch (Exception e) {
+            System.err.println("Lỗi: " + e.getMessage());
         }
-        catch (Exception e) {
+    }
+
+    private void searchInvoice() {
+        try {
+            boolean isCheck2 = true;
+            while (isCheck2) {
+                System.out.println("1. Tìm theo tên khách hàng");
+                System.out.println("2. Tìm theo ngày/tháng/năm");
+                System.out.println("3. Quay lại menu hóa đơn");
+                System.out.print("Nhập lựa chọn: ");
+                int choice = Integer.parseInt(sc.nextLine());
+                switch (choice) {
+                    case 1:
+                        System.out.print("Nhập từ khóa để tìm kiếm hóa đơn theo tên khách hàng: ");
+                        String customerName = sc.nextLine();
+                        List<Invoice> list = invoiceDAO.searchInvoiceByCustomerName(customerName);
+                        if (list.isEmpty()) {
+                            System.err.println("Không tồn tại hóa đơn nào phù hợp!");
+                            isCheck2 = false;
+                        } else {
+                            System.out.println("========== DANH SÁCH HÓA ĐƠN ==========");
+                            for (Invoice invoice : list) {
+                                System.out.printf(" - ID Invoice: %d | Customer ID: %d | Customer Name: %s | created_at: %s | total_amount: %.2f\n",
+                                        invoice.getId(),
+                                        invoice.getCustomerId(),
+                                        customerDAO.getCustomerById(invoice.getId()).getName(),
+                                        invoice.getCreatedAt(),
+                                        invoice.getTotalAmount()
+                                );
+                            }
+                            isCheck2 = false;
+                        }
+                        break;
+                    case 2:
+                        System.out.print("Nhập ngày/tháng/năm để tìm kiếm hóa đơn phù hợp: ");
+                        LocalDate date = LocalDate.parse(sc.nextLine(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                        if (!date.isBefore(LocalDate.now())) {
+                            System.err.printf("Thời gian không đúng, vì hiện tại mới đang là %s", LocalDate.now());
+                        }
+                        List<Invoice> list2 = invoiceDAO.searchInvoiceByDate(date);
+                        if (list2.isEmpty()) {
+                            System.err.println("Không tồn tại hóa đơn nào phù hợp!");
+                            isCheck2 = false;
+                        } else {
+                            System.out.println("========== DANH SÁCH HÓA ĐƠN ==========");
+                            for (Invoice invoice : list2) {
+                                System.out.printf(" - ID Invoice: %d | Customer ID: %d | Customer Name: %s | created_at: %s | total_amount: %.2f\n",
+                                        invoice.getId(),
+                                        invoice.getCustomerId(),
+                                        customerDAO.getCustomerById(invoice.getId()).getName(),
+                                        invoice.getCreatedAt(),
+                                        invoice.getTotalAmount()
+                                );
+                            }
+                            isCheck2 = false;
+                        }
+                        break;
+                    case 3:
+                        return;
+                    default:
+                        System.err.println("Invalid choice! Try again!");
+                        break;
+                }
+            }
+        } catch (DateTimeParseException e) {
+            System.err.println("Không đúng định dạng của ngày/tháng/năm !");
+        } catch (NumberFormatException e) {
+            System.err.println("Không đúng định dạng của số!");
+        } catch (Exception e) {
             System.err.println("Lỗi: " + e.getMessage());
         }
     }

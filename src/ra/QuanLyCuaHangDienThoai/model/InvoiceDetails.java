@@ -6,7 +6,8 @@ public class InvoiceDetails {
     private int productId;
     private int quantity;
     private double unitPrice;
-    public InvoiceDetails(int invoiceId, int productId, int quantity, double unitPrice) {
+    public InvoiceDetails(int id, int invoiceId, int productId, int quantity, double unitPrice) {
+        this.id = id;
         this.invoiceId = invoiceId;
         this.productId = productId;
         this.quantity = quantity;

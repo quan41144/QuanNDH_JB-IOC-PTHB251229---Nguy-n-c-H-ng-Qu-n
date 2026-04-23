@@ -93,6 +93,22 @@ begin
 	return false;
 end;
 $$;
+-- Kiểm tra sự tồn tại của sản phẩm trong kho hàng
+create or replace function isCheck_product_stock(
+	p_id int
+)
+returns boolean
+language plpgsql
+as $$
+declare v_stock int;
+begin
+	select stock into v_stock from product where id = p_id;
+	if v_stock > 0 then
+		return true;
+	end if;
+	return false;
+end;
+$$;
 -- 1. Thêm mới sản phẩm
 create or replace procedure add_product(
 	p_name varchar,
@@ -485,6 +501,16 @@ begin
 	update invoice set total_amount = p_total_amount where id = p_id;
 end;
 $$;
+-- Xóa đơn hàng theo id
+create or replace procedure delete_invoice(
+	p_id int
+)
+language plpgsql
+as $$
+begin
+	delete from invoice where id = p_id;
+end;
+$$;
 -- 2. Hiển thị danh sách hóa đơn
 create or replace function list_invoice()
 returns table(
@@ -500,6 +526,29 @@ begin
 	select id, customer_id, created_at, total_amount
 	from invoice
 	order by id;
+end;
+$$;
+-- Hiển thị danh sách của chi tiết hóa đơn
+create or replace function get_invoice_details(
+	p_invoice_id int
+)
+returns table (
+	id int,
+	invoice_id int,
+	product_id int,
+	product_name varchar,
+	quantity int,
+	unit_price decimal
+)
+language plpgsql
+as $$
+begin
+	return query
+	select ide.id, ide.product_id, ide.product_id, p.name, ide.quantity, ide.unit_price
+	from invoice_details ide
+	join product p on ide.product_id = p.id
+	where ide.invoice_id = p_invoice_id
+	order by ide.product_id;
 end;
 $$;
 -- 3. Tìm kiếm hóa đơn
